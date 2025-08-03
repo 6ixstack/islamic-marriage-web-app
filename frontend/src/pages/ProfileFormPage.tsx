@@ -115,46 +115,97 @@ const profileSchema = z.object({
   path: ["professionOther"],
 });
 
+// Complete default values for form reset
+const defaultFormValues: Partial<ProfileFormData> = {
+  // Basic Info
+  name: '',
+  gender: undefined,
+  dateOfBirth: '',
+  countryOfBirth: '',
+  height: '',
+  complexion: undefined,
+  
+  // Education
+  educationDegree: undefined,
+  educationDegreeOther: '',
+  educationSubject: '',
+  educationYear: undefined,
+  educationInstitute: '',
+  
+  // Profession
+  profession: undefined,
+  professionOther: '',
+  company: '',
+  
+  // Personal
+  maritalStatus: undefined,
+  
+  // Parents Info
+  fatherOccupation: '',
+  fatherEducation: '',
+  motherOccupation: '',
+  motherEducation: '',
+  parentsLocation: '',
+  
+  // Current Status & Citizenship
+  currentResidence: '',
+  citizenship: '',
+  immigrationStatus: undefined,
+  immigrationDetails: '',
+  
+  // Preferences
+  willingToRelocate: false,
+  willingToLiveWithInLaws: false,
+  
+  // Religious Practice
+  religiousPractice: undefined,
+  praysFiveTimeDaily: false,
+  attendsMosqueRegularly: false,
+  halaalEarning: true,
+  halaalFood: true,
+  
+  // Lifestyle
+  drinksAlcohol: false,
+  smokes: false,
+  hobbies: '',
+  
+  // Pets
+  hasPets: false,
+  petDetails: '',
+  
+  // Spouse Preferences
+  spouseAgeRangeMin: undefined,
+  spouseAgeRangeMax: undefined,
+  spouseEducation: '',
+  spouseCitizenship: '',
+  spouseMinHeight: '',
+  
+  // About sections
+  aboutYou: '',
+  aboutSpouse: '',
+  
+  // Siblings
+  siblings: [],
+  
+  // Consent and terms
+  hasParentConsent: false,
+  agreedToTerms: false,
+};
+
 const ProfileFormPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  
+
   const { control, handleSubmit, formState: { errors }, watch, setValue, getValues, reset } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      willingToRelocate: false,
-      willingToLiveWithInLaws: false,
-      praysFiveTimeDaily: false,
-      attendsMosqueRegularly: false,
-      halaalEarning: true,
-      halaalFood: true,
-      drinksAlcohol: false,
-      smokes: false,
-      hasPets: false,
-      siblings: [],
-      hasParentConsent: false,
-      agreedToTerms: false,
-    }
+    defaultValues: defaultFormValues
   });
 
   // Reset form when component mounts to ensure clean state
   useEffect(() => {
     setCurrentStep(1);
-    reset({
-      willingToRelocate: false,
-      willingToLiveWithInLaws: false,
-      praysFiveTimeDaily: false,
-      attendsMosqueRegularly: false,
-      halaalEarning: true,
-      halaalFood: true,
-      drinksAlcohol: false,
-      smokes: false,
-      hasPets: false,
-      siblings: [],
-      hasParentConsent: false,
-      agreedToTerms: false,
-    });
+    reset(defaultFormValues);
   }, [reset]);
 
   const hasPets = watch('hasPets');
@@ -168,7 +219,7 @@ const ProfileFormPage = () => {
       setLoading(true);
       await apiService.createProfile(data);
       // Reset form after successful submission
-      reset();
+      reset(defaultFormValues);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Profile submission error:', error);
@@ -181,7 +232,7 @@ const ProfileFormPage = () => {
   // Cleanup form state when component unmounts
   useEffect(() => {
     return () => {
-      reset();
+      reset(defaultFormValues);
     };
   }, [reset]);
 
@@ -382,7 +433,7 @@ const ProfileFormPage = () => {
                       type="number"
                       min="1980"
                       max={new Date().getFullYear()}
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     {errors.educationYear && <p className="mt-1 text-sm text-red-600">{errors.educationYear.message}</p>}
@@ -888,7 +939,7 @@ const ProfileFormPage = () => {
                       type="number"
                       min="18"
                       max="65"
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     {errors.spouseAgeRangeMin && <p className="mt-1 text-sm text-red-600">{errors.spouseAgeRangeMin.message}</p>}
@@ -907,7 +958,7 @@ const ProfileFormPage = () => {
                       type="number"
                       min="18"
                       max="65"
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     {errors.spouseAgeRangeMax && <p className="mt-1 text-sm text-red-600">{errors.spouseAgeRangeMax.message}</p>}
@@ -1041,7 +1092,7 @@ const ProfileFormPage = () => {
                               type="number"
                               min="1"
                               max="100"
-                              onChange={(e) => field.onChange(parseInt(e.target.value))}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
                               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                             />
                           </div>
