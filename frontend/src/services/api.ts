@@ -91,6 +91,26 @@ class ApiService {
     await this.api.post(`/api/admin/profiles/${id}/reject`, { reason, notes });
   }
 
+  async getStats(): Promise<any> {
+    const response: AxiosResponse<ApiResponse<any>> = await this.api.get('/api/admin/stats');
+    return response.data.data!;
+  }
+
+  async getAllUsers(): Promise<any[]> {
+    const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get('/api/admin/users');
+    return response.data.data!;
+  }
+
+  async updateUserRole(id: string, role: string): Promise<any> {
+    const response: AxiosResponse<ApiResponse<any>> = await this.api.patch(`/api/admin/users/${id}/role`, { role });
+    return response.data.data!;
+  }
+
+  async getAdminActions(): Promise<any[]> {
+    const response: AxiosResponse<ApiResponse<any[]>> = await this.api.get('/api/admin/actions');
+    return response.data.data!;
+  }
+
   // Interest endpoints
   async expressInterest(profileId: string, notes?: string): Promise<void> {
     await this.api.post('/api/interests', { profileId, notes });

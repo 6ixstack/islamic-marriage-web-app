@@ -1,3 +1,12 @@
 node_modules
 # Keep environment variables out of version control
 .env
+
+# Build directories
+frontend/build/
+backend/dist/
+
+# IDE and OS files
+.vscode/
+.DS_Store
+*.log

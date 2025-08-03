@@ -544,12 +544,13 @@ const ProfileFormPage = () => {
               <Controller
                 name="willingToRelocate"
                 control={control}
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...field } }) => (
                   <div className="flex items-center">
                     <input
                       {...field}
                       type="checkbox"
-                      checked={field.value}
+                      checked={value}
+                      onChange={(e) => onChange(e.target.checked)}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <label className="ml-2 block text-sm text-gray-900">
@@ -562,12 +563,13 @@ const ProfileFormPage = () => {
               <Controller
                 name="willingToLiveWithInLaws"
                 control={control}
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...field } }) => (
                   <div className="flex items-center">
                     <input
                       {...field}
                       type="checkbox"
-                      checked={field.value}
+                      checked={value}
+                      onChange={(e) => onChange(e.target.checked)}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <label className="ml-2 block text-sm text-gray-900">
@@ -611,12 +613,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="praysFiveTimeDaily"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -629,12 +632,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="attendsMosqueRegularly"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -647,12 +651,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="halaalEarning"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -665,12 +670,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="halaalFood"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -685,12 +691,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="drinksAlcohol"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -703,12 +710,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="smokes"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -967,7 +975,7 @@ const ProfileFormPage = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const newSiblings = [...siblings, { gender: 'MALE', age: 25, maritalStatus: 'NEVER_MARRIED', profession: '' }];
+                    const newSiblings = [...siblings, { gender: 'MALE' as Gender, age: 25, maritalStatus: 'NEVER_MARRIED' as MaritalStatus, profession: '' }];
                     setValue('siblings', newSiblings);
                   }}
                   className="mt-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
@@ -981,12 +989,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="hasPets"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-center mb-4">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <label className="ml-2 block text-sm font-medium text-gray-700">
@@ -1020,12 +1029,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="hasParentConsent"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-start">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
@@ -1039,12 +1049,13 @@ const ProfileFormPage = () => {
                 <Controller
                   name="agreedToTerms"
                   control={control}
-                  render={({ field }) => (
+                  render={({ field: { onChange, value, ...field } }) => (
                     <div className="flex items-start">
                       <input
                         {...field}
                         type="checkbox"
-                        checked={field.value}
+                        checked={value}
+                        onChange={(e) => onChange(e.target.checked)}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
                       />
                       <label className="ml-2 block text-sm text-gray-900">
