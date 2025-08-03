@@ -117,10 +117,22 @@ export const createProfile = async (req: Request, res: Response) => {
       .single();
 
     if (error) {
-      console.error('Profile creation error:', error);
+      console.error('Profile creation error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        fullError: error
+      });
+      console.error('Data being inserted:', {
+        ...validatedData,
+        submittedById: userId,
+        status: 'PENDING'
+      });
       return res.status(500).json({
         success: false,
-        error: 'Failed to create profile'
+        error: `Database error: ${error.message}`,
+        details: error.details
       } as ApiResponse);
     }
 
