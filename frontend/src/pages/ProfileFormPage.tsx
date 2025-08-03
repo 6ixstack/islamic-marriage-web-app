@@ -197,7 +197,7 @@ const ProfileFormPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const { control, handleSubmit, formState: { errors }, watch, setValue, getValues, reset } = useForm<ProfileFormData>({
+  const { control, handleSubmit, formState: { errors }, watch, setValue, reset, getValues } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: defaultFormValues
   });
@@ -215,18 +215,31 @@ const ProfileFormPage = () => {
   const profession = watch('profession');
 
   const onSubmit = async (data: ProfileFormData) => {
+    console.log('Form submission started', data);
     try {
       setLoading(true);
-      await apiService.createProfile(data);
+      console.log('Calling API to create profile...');
+      const result = await apiService.createProfile(data);
+      console.log('Profile created successfully:', result);
       // Reset form after successful submission
       reset(defaultFormValues);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Profile submission error:', error);
-      alert(error.response?.data?.error || 'Failed to submit profile');
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      alert(error.response?.data?.error || error.message || 'Failed to submit profile');
     } finally {
       setLoading(false);
     }
+  };
+
+  const onError = (errors: any) => {
+    console.error('Form validation errors:', errors);
+    alert('Please fix the validation errors before submitting');
   };
 
   // Cleanup form state when component unmounts
@@ -1200,6 +1213,20 @@ const ProfileFormPage = () => {
                 )}
               </div>
 
+              {/* Debug: Show validation errors if any */}
+              {Object.keys(errors).length > 0 && (
+                <div className="border border-red-200 bg-red-50 p-4 rounded-md">
+                  <h4 className="text-sm font-medium text-red-800 mb-2">
+                    Please fix the following errors before submitting:
+                  </h4>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    {Object.entries(errors).map(([field, error]: [string, any]) => (
+                      <li key={field}>• {field}: {error?.message || 'Invalid value'}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Consent Checkboxes */}
               <div className="space-y-4 border-t border-gray-200 pt-6">
                 <Controller
@@ -1283,7 +1310,7 @@ const ProfileFormPage = () => {
           </div>
 
           {/* Form Content */}
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6">
+          <form onSubmit={handleSubmit(onSubmit, onError)} className="p-6">
             {renderStep()}
 
             {/* Navigation Buttons */}
@@ -1306,13 +1333,26 @@ const ProfileFormPage = () => {
                   Next
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                >
-                  {loading ? 'Submitting...' : 'Submit Profile'}
-                </button>
+                <div className="space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      console.log('Debug: Form data:', getValues());
+                      console.log('Debug: Form errors:', errors);
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Debug Form Data
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    onClick={() => console.log('Submit button clicked!')}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {loading ? 'Submitting...' : 'Submit Profile'}
+                  </button>
+                </div>
               )}
             </div>
           </form>
