@@ -7,6 +7,7 @@ interface AuthContextType extends AuthState {
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   clearError: () => void;
+  setUserFromCallback: (user: User, token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,6 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          localStorage.removeItem('refresh_token');
           dispatch({ type: 'CLEAR_USER' });
         }
       } else {
@@ -82,6 +84,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     initAuth();
   }, []);
+
+  // Add method to set user data from auth callback
+  const setUserFromCallback = (user: User, token: string) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    dispatch({ type: 'SET_USER', payload: { user, token } });
+  };
 
   const login = async (credentials: LoginRequest) => {
     try {
@@ -114,6 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('refresh_token');
     dispatch({ type: 'CLEAR_USER' });
   };
 
@@ -129,6 +139,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         logout,
         clearError,
+        setUserFromCallback,
       }}
     >
       {children}

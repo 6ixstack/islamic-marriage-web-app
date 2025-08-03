@@ -54,6 +54,7 @@ export const login = async (req: Request, res: Response) => {
       success: true,
       data: {
         user: userProfile,
+        token: data.session.access_token,
         session: data.session
       },
       message: 'Login successful'

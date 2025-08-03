@@ -12,6 +12,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfileFormPage from './pages/ProfileFormPage';
 import ProfilesPage from './pages/ProfilesPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import AuthCallback from './components/AuthCallback';
 
 // Styles
 import './styles/globals.css';
@@ -26,6 +27,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             
             {/* Protected routes */}
             <Route
