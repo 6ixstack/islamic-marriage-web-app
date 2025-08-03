@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  PARENT_RELATIVE
+  CANDIDATE
+}
+
+enum ProfileStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum Complexion {
+  VERY_FAIR
+  FAIR
+  WHEATISH
+  BROWN
+  DARK
+}
+
+enum ImmigrationStatus {
+  CITIZEN
+  PERMANENT_RESIDENT
+  TEMPORARY_VISA
+  STUDENT_VISA
+  WORK_VISA
+  OTHER
+}
+
+enum ReligiousPracticeLevel {
+  VERY_PRACTICING
+  PRACTICING
+  MODERATE
+  BASIC
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  role              UserRole @default(PARENT_RELATIVE)
+  emailVerified     Boolean  @default(false)
+  emailVerificationToken String?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  submittedProfiles Profile[] @relation("ProfileSubmitter")
+  interests         Interest[]
+  adminActions      AdminAction[]
+
+  @@map("users")
+}
+
+model Profile {
+  id                  String            @id @default(cuid())
+  
+  // Basic Info
+  name                String
+  gender              Gender
+  dateOfBirth         DateTime
+  countryOfBirth      String
+  height              String
+  complexion          Complexion
+  
+  // Education
+  educationDegree     String
+  educationSubject    String
+  educationYear       Int
+  educationInstitute  String
+  
+  // Profession
+  profession          String
+  company             String?
+  
+  // Personal
+  maritalStatus       MaritalStatus
+  
+  // Parents Info
+  fatherOccupation    String
+  fatherEducation     String?
+  motherOccupation    String
+  motherEducation     String?
+  parentsLocation     String
+  
+  // Current Status
+  currentResidence    String
+  immigrationStatus   ImmigrationStatus
+  immigrationDetails  String?
+  
+  // Preferences
+  willingToRelocate   Boolean
+  willingToLiveWithInLaws Boolean
+  
+  // Religious Practice
+  religiousPractice   ReligiousPracticeLevel
+  praysFiveTimeDaily  Boolean
+  attendsMosqueRegularly Boolean
+  halaalEarning       Boolean
+  halaalFood          Boolean
+  
+  // Lifestyle
+  drinksAlcohol       Boolean
+  smokes              Boolean
+  hobbies             String?
+  
+  // Pets
+  hasPets             Boolean
+  petDetails          String?
+  
+  // Spouse Preferences
+  spouseAgeRangeMin   Int
+  spouseAgeRangeMax   Int
+  spouseEducation     String?
+  spouseCitizenship   String?
+  spouseMinHeight     String?
+  
+  // About sections
+  aboutYou            String
+  aboutSpouse         String
+  
+  // Siblings (JSON field for flexibility)
+  siblings            Json?
+  
+  // Admin fields
+  status              ProfileStatus @default(PENDING)
+  rejectionReason     String?
+  publishedAt         DateTime?
+  monthlyBatch        String? // Format: "YYYY-MM"
+  
+  // Consent and terms
+  hasParentConsent    Boolean
+  agreedToTerms       Boolean
+  
+  // System fields
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  // Relations
+  submittedBy         User      @relation("ProfileSubmitter", fields: [submittedById], references: [id])
+  submittedById       String
+  
+  interests           Interest[]
+  adminActions        AdminAction[]
+
+  @@map("profiles")
+}
+
+model Interest {
+  id               String   @id @default(cuid())
+  
+  // Relations
+  interestedUser   User     @relation(fields: [interestedUserId], references: [id])
+  interestedUserId String
+  
+  targetProfile    Profile  @relation(fields: [targetProfileId], references: [id])
+  targetProfileId  String
+  
+  // Status
+  isActive         Boolean  @default(true)
+  notes            String?
+  
+  // System fields
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@unique([interestedUserId, targetProfileId])
+  @@map("interests")
+}
+
+model AdminAction {
+  id          String   @id @default(cuid())
+  action      String   // "APPROVE", "REJECT", "PUBLISH", "WITHDRAW", etc.
+  reason      String?
+  notes       String?
+  
+  // Relations
+  admin       User     @relation(fields: [adminId], references: [id])
+  adminId     String
+  
+  profile     Profile  @relation(fields: [profileId], references: [id])
+  profileId   String
+  
+  // System fields
+  createdAt   DateTime @default(now())
+  
+  @@map("admin_actions")
+}
+
+model EmailLog {
+  id          String   @id @default(cuid())
+  recipient   String
+  subject     String
+  body        String
+  sent        Boolean  @default(false)
+  sentAt      DateTime?
+  error       String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@map("email_logs")
+}
