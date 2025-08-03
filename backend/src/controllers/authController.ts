@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { prisma } from '@/utils/database';
-import { generateToken } from '@/utils/jwt';
-import { ApiResponse, AuthResponse, LoginRequest, RegisterRequest } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '../utils/supabase';
+import { ApiResponse } from '../types';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
@@ -18,58 +15,49 @@ const registerSchema = z.object({
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const validatedData = loginSchema.parse(req.body) as LoginRequest;
+    const validatedData = loginSchema.parse(req.body);
     
-    const user = await prisma.user.findUnique({
-      where: { email: validatedData.email }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: validatedData.email,
+      password: validatedData.password,
     });
 
-    if (!user) {
+    if (error) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid email or password'
+        error: error.message
       } as ApiResponse);
     }
 
-    const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
-    
-    if (!isPasswordValid) {
+    if (!data.user) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid email or password'
+        error: 'Login failed'
       } as ApiResponse);
     }
 
-    if (!user.emailVerified) {
-      return res.status(401).json({
+    // Get user profile from our users table
+    const { data: userProfile, error: profileError } = await supabase
+      .from('users')
+      .select('id, email, role, emailVerified, createdAt, updatedAt')
+      .eq('email', data.user.email)
+      .single();
+
+    if (profileError || !userProfile) {
+      return res.status(404).json({
         success: false,
-        error: 'Please verify your email before signing in'
+        error: 'User profile not found'
       } as ApiResponse);
     }
-
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role
-    });
-
-    const responseData: AuthResponse = {
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        emailVerified: user.emailVerified,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      },
-      token
-    };
 
     res.json({
       success: true,
-      data: responseData,
+      data: {
+        user: userProfile,
+        session: data.session
+      },
       message: 'Login successful'
-    } as ApiResponse<AuthResponse>);
+    } as ApiResponse);
 
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -89,40 +77,49 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const validatedData = registerSchema.parse(req.body) as RegisterRequest;
+    const validatedData = registerSchema.parse(req.body);
     
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email }
+    // Create user in Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: validatedData.email,
+      password: validatedData.password,
     });
 
-    if (existingUser) {
+    if (error) {
       return res.status(400).json({
         success: false,
-        error: 'Email already registered'
+        error: error.message
       } as ApiResponse);
     }
 
-    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
-    const emailVerificationToken = uuidv4();
+    if (!data.user) {
+      return res.status(400).json({
+        success: false,
+        error: 'Failed to create account'
+      } as ApiResponse);
+    }
 
-    const user = await prisma.user.create({
-      data: {
+    // Create user profile in our users table
+    const { error: profileError } = await supabase
+      .from('users')
+      .insert({
+        id: data.user.id,
         email: validatedData.email,
-        password: hashedPassword,
-        emailVerificationToken,
-        role: 'PARENT_RELATIVE'
-      }
-    });
+        role: 'PARENT_RELATIVE',
+        emailVerified: false
+      });
 
-    // Note: In production, send verification email here
-    console.log(`Verification token for ${user.email}: ${emailVerificationToken}`);
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      // Still return success since the auth user was created
+    }
 
     res.status(201).json({
       success: true,
       message: 'Account created successfully. Please check your email to verify your account.',
       data: {
-        id: user.id,
-        email: user.email
+        id: data.user.id,
+        email: data.user.email
       }
     } as ApiResponse);
 
@@ -142,36 +139,48 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyEmail = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response) => {
   try {
-    const { token } = req.params;
-
-    const user = await prisma.user.findFirst({
-      where: { emailVerificationToken: token }
-    });
-
-    if (!user) {
-      return res.status(400).json({
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({
         success: false,
-        error: 'Invalid verification token'
+        error: 'Authorization header required'
       } as ApiResponse);
     }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        emailVerified: true,
-        emailVerificationToken: null
-      }
-    });
+    const token = authHeader.replace('Bearer ', '');
+    
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid or expired token'
+      } as ApiResponse);
+    }
+
+    // Get user profile from our users table
+    const { data: userProfile, error: profileError } = await supabase
+      .from('users')
+      .select('id, email, role, emailVerified, createdAt, updatedAt')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !userProfile) {
+      return res.status(404).json({
+        success: false,
+        error: 'User profile not found'
+      } as ApiResponse);
+    }
 
     res.json({
       success: true,
-      message: 'Email verified successfully'
+      data: userProfile
     } as ApiResponse);
 
   } catch (error) {
-    console.error('Email verification error:', error);
+    console.error('Get profile error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'
@@ -179,41 +188,31 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const getProfile = async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
   try {
-    if (!req.user) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
       return res.status(401).json({
         success: false,
-        error: 'Authentication required'
+        error: 'Authorization header required'
       } as ApiResponse);
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      } as ApiResponse);
+    const token = authHeader.replace('Bearer ', '');
+    
+    const { error } = await supabase.auth.admin.signOut(token);
+    
+    if (error) {
+      console.error('Logout error:', error);
     }
 
     res.json({
       success: true,
-      data: user
+      message: 'Logged out successfully'
     } as ApiResponse);
 
   } catch (error) {
-    console.error('Get profile error:', error);
+    console.error('Logout error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'

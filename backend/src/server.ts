@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
 // Import routes
-import authRoutes from '@/routes/auth';
+import authRoutes from './routes/auth';
 
 // Load environment variables
 dotenv.config();
