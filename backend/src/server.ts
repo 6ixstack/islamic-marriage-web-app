@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -31,7 +31,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.json({ 
     success: true, 
     message: 'Muslim Marriage Referral Platform API is running',
@@ -43,7 +43,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     error: 'Endpoint not found'
@@ -51,7 +51,7 @@ app.use('*', (req, res) => {
 });
 
 // Global error handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error:', err);
   res.status(500).json({
     success: false,
