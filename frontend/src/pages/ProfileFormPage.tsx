@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -99,7 +99,7 @@ const ProfileFormPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
-  const { control, handleSubmit, formState: { errors }, watch, setValue, getValues } = useForm<ProfileFormData>({
+  const { control, handleSubmit, formState: { errors }, watch, setValue, getValues, reset } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       willingToRelocate: false,
@@ -117,6 +117,25 @@ const ProfileFormPage = () => {
     }
   });
 
+  // Reset form when component mounts to ensure clean state
+  useEffect(() => {
+    setCurrentStep(1);
+    reset({
+      willingToRelocate: false,
+      willingToLiveWithInLaws: false,
+      praysFiveTimeDaily: false,
+      attendsMosqueRegularly: false,
+      halaalEarning: true,
+      halaalFood: true,
+      drinksAlcohol: false,
+      smokes: false,
+      hasPets: false,
+      siblings: [],
+      hasParentConsent: false,
+      agreedToTerms: false,
+    });
+  }, [reset]);
+
   const hasPets = watch('hasPets');
   const immigrationStatus = watch('immigrationStatus');
   const siblings = watch('siblings') || [];
@@ -125,6 +144,8 @@ const ProfileFormPage = () => {
     try {
       setLoading(true);
       await apiService.createProfile(data);
+      // Reset form after successful submission
+      reset();
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Profile submission error:', error);
@@ -133,6 +154,13 @@ const ProfileFormPage = () => {
       setLoading(false);
     }
   };
+
+  // Cleanup form state when component unmounts
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
 
   const totalSteps = 7;
 
