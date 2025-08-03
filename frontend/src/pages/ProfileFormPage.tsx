@@ -9,7 +9,9 @@ import {
   MaritalStatus, 
   Complexion, 
   ImmigrationStatus, 
-  ReligiousPracticeLevel 
+  ReligiousPracticeLevel,
+  EducationLevel,
+  ProfessionCategory
 } from '../types';
 import { apiService } from '../services/api';
 
@@ -23,13 +25,15 @@ const profileSchema = z.object({
   complexion: z.enum(['VERY_FAIR', 'FAIR', 'WHEATISH', 'BROWN', 'DARK']),
   
   // Education
-  educationDegree: z.string().min(1, 'Education degree is required'),
+  educationDegree: z.enum(['High School', 'Associate Degree', 'Bachelor\'s Degree', 'Master\'s Degree', 'PhD/Doctorate', 'Professional Degree', 'Trade/Technical Certificate', 'Other']),
+  educationDegreeOther: z.string().optional(),
   educationSubject: z.string().min(1, 'Education subject is required'),
   educationYear: z.number().min(1980).max(new Date().getFullYear()),
   educationInstitute: z.string().min(1, 'Education institute is required'),
   
   // Profession
-  profession: z.string().min(1, 'Profession is required'),
+  profession: z.enum(['Engineer', 'Doctor', 'Teacher/Professor', 'Business/Finance', 'IT/Software', 'Healthcare', 'Government', 'Student', 'Self-Employed', 'Homemaker', 'Other']),
+  professionOther: z.string().optional(),
   company: z.string().optional(),
   
   // Personal
@@ -42,8 +46,9 @@ const profileSchema = z.object({
   motherEducation: z.string().optional(),
   parentsLocation: z.string().min(1, 'Parents location is required'),
   
-  // Current Status
+  // Current Status & Citizenship
   currentResidence: z.string().min(1, 'Current residence is required'),
+  citizenship: z.string().min(1, 'Citizenship is required'),
   immigrationStatus: z.enum(['CITIZEN', 'PERMANENT_RESIDENT', 'TEMPORARY_VISA', 'STUDENT_VISA', 'WORK_VISA', 'OTHER']),
   immigrationDetails: z.string().optional(),
   
@@ -92,6 +97,22 @@ const profileSchema = z.object({
 }).refine((data) => data.spouseAgeRangeMin <= data.spouseAgeRangeMax, {
   message: "Minimum age must be less than or equal to maximum age",
   path: ["spouseAgeRangeMax"],
+}).refine((data) => {
+  if (data.educationDegree === 'Other' && !data.educationDegreeOther) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Please specify your education degree",
+  path: ["educationDegreeOther"],
+}).refine((data) => {
+  if (data.profession === 'Other' && !data.professionOther) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Please specify your profession",
+  path: ["professionOther"],
 });
 
 const ProfileFormPage = () => {
@@ -139,6 +160,8 @@ const ProfileFormPage = () => {
   const hasPets = watch('hasPets');
   const immigrationStatus = watch('immigrationStatus');
   const siblings = watch('siblings') || [];
+  const educationDegree = watch('educationDegree');
+  const profession = watch('profession');
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
@@ -293,16 +316,43 @@ const ProfileFormPage = () => {
                 render={({ field }) => (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Education Degree *</label>
-                    <input
+                    <select
                       {...field}
-                      type="text"
-                      placeholder="e.g., Bachelor's, Master's, PhD"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    />
+                    >
+                      <option value="">Select education degree</option>
+                      <option value="High School">High School</option>
+                      <option value="Associate Degree">Associate Degree</option>
+                      <option value="Bachelor's Degree">Bachelor's Degree</option>
+                      <option value="Master's Degree">Master's Degree</option>
+                      <option value="PhD/Doctorate">PhD/Doctorate</option>
+                      <option value="Professional Degree">Professional Degree (MD, JD, etc.)</option>
+                      <option value="Trade/Technical Certificate">Trade/Technical Certificate</option>
+                      <option value="Other">Other</option>
+                    </select>
                     {errors.educationDegree && <p className="mt-1 text-sm text-red-600">{errors.educationDegree.message}</p>}
                   </div>
                 )}
               />
+
+              {educationDegree === 'Other' && (
+                <Controller
+                  name="educationDegreeOther"
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Please specify your education degree *</label>
+                      <input
+                        {...field}
+                        type="text"
+                        placeholder="Enter your specific education degree"
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      {errors.educationDegreeOther && <p className="mt-1 text-sm text-red-600">{errors.educationDegreeOther.message}</p>}
+                    </div>
+                  )}
+                />
+              )}
 
               <Controller
                 name="educationSubject"
@@ -363,16 +413,46 @@ const ProfileFormPage = () => {
                 render={({ field }) => (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Profession *</label>
-                    <input
+                    <select
                       {...field}
-                      type="text"
-                      placeholder="e.g., Software Engineer, Doctor"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    />
+                    >
+                      <option value="">Select profession</option>
+                      <option value="Engineer">Engineer</option>
+                      <option value="Doctor">Doctor</option>
+                      <option value="Teacher/Professor">Teacher/Professor</option>
+                      <option value="Business/Finance">Business/Finance</option>
+                      <option value="IT/Software">IT/Software</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Government">Government</option>
+                      <option value="Student">Student</option>
+                      <option value="Self-Employed">Self-Employed</option>
+                      <option value="Homemaker">Homemaker</option>
+                      <option value="Other">Other</option>
+                    </select>
                     {errors.profession && <p className="mt-1 text-sm text-red-600">{errors.profession.message}</p>}
                   </div>
                 )}
               />
+
+              {profession === 'Other' && (
+                <Controller
+                  name="professionOther"
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Please specify your profession *</label>
+                      <input
+                        {...field}
+                        type="text"
+                        placeholder="Enter your specific profession"
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      {errors.professionOther && <p className="mt-1 text-sm text-red-600">{errors.professionOther.message}</p>}
+                    </div>
+                  )}
+                />
+              )}
 
               <Controller
                 name="company"
@@ -524,6 +604,23 @@ const ProfileFormPage = () => {
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     {errors.currentResidence && <p className="mt-1 text-sm text-red-600">{errors.currentResidence.message}</p>}
+                  </div>
+                )}
+              />
+
+              <Controller
+                name="citizenship"
+                control={control}
+                render={({ field }) => (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Citizenship *</label>
+                    <input
+                      {...field}
+                      type="text"
+                      placeholder="e.g., Canadian, Pakistani, British"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    {errors.citizenship && <p className="mt-1 text-sm text-red-600">{errors.citizenship.message}</p>}
                   </div>
                 )}
               />

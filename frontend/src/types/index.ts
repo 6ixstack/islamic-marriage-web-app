@@ -12,6 +12,10 @@ export type ImmigrationStatus = 'CITIZEN' | 'PERMANENT_RESIDENT' | 'TEMPORARY_VI
 
 export type ReligiousPracticeLevel = 'VERY_PRACTICING' | 'PRACTICING' | 'MODERATE' | 'BASIC';
 
+export type EducationLevel = 'High School' | 'Associate Degree' | 'Bachelor\'s Degree' | 'Master\'s Degree' | 'PhD/Doctorate' | 'Professional Degree' | 'Trade/Technical Certificate' | 'Other';
+
+export type ProfessionCategory = 'Engineer' | 'Doctor' | 'Teacher/Professor' | 'Business/Finance' | 'IT/Software' | 'Healthcare' | 'Government' | 'Student' | 'Self-Employed' | 'Homemaker' | 'Other';
+
 export interface User {
   id: string;
   email: string;
@@ -31,13 +35,15 @@ export interface ProfileFormData {
   complexion: Complexion;
   
   // Education
-  educationDegree: string;
+  educationDegree: EducationLevel;
+  educationDegreeOther?: string;
   educationSubject: string;
   educationYear: number;
   educationInstitute: string;
   
   // Profession
-  profession: string;
+  profession: ProfessionCategory;
+  professionOther?: string;
   company?: string;
   
   // Personal
@@ -50,8 +56,9 @@ export interface ProfileFormData {
   motherEducation?: string;
   parentsLocation: string;
   
-  // Current Status
+  // Current Status & Citizenship
   currentResidence: string;
+  citizenship: string;
   immigrationStatus: ImmigrationStatus;
   immigrationDetails?: string;
   

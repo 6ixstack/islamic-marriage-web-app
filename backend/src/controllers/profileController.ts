@@ -14,12 +14,14 @@ const profileSchema = z.object({
   
   // Education
   educationDegree: z.string().min(1, 'Education degree is required'),
+  educationDegreeOther: z.string().optional(),
   educationSubject: z.string().min(1, 'Education subject is required'),
   educationYear: z.number().min(1980).max(new Date().getFullYear()),
   educationInstitute: z.string().min(1, 'Education institute is required'),
   
   // Profession
   profession: z.string().min(1, 'Profession is required'),
+  professionOther: z.string().optional(),
   company: z.string().optional(),
   
   // Personal
@@ -34,6 +36,7 @@ const profileSchema = z.object({
   
   // Current Status
   currentResidence: z.string().min(1, 'Current residence is required'),
+  citizenship: z.string().min(1, 'Citizenship is required'),
   immigrationStatus: z.enum(['CITIZEN', 'PERMANENT_RESIDENT', 'TEMPORARY_VISA', 'STUDENT_VISA', 'WORK_VISA', 'OTHER']),
   immigrationDetails: z.string().optional(),
   

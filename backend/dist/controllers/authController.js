@@ -46,6 +46,7 @@ const login = async (req, res) => {
             success: true,
             data: {
                 user: userProfile,
+                token: data.session.access_token,
                 session: data.session
             },
             message: 'Login successful'

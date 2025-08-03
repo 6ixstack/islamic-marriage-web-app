@@ -51,10 +51,12 @@ export interface ProfileFormData {
   height: string;
   complexion: Complexion;
   educationDegree: string;
+  educationDegreeOther?: string;
   educationSubject: string;
   educationYear: number;
   educationInstitute: string;
   profession: string;
+  professionOther?: string;
   company?: string;
   maritalStatus: MaritalStatus;
   fatherOccupation: string;
@@ -63,6 +65,7 @@ export interface ProfileFormData {
   motherEducation?: string;
   parentsLocation: string;
   currentResidence: string;
+  citizenship: string;
   immigrationStatus: ImmigrationStatus;
   immigrationDetails?: string;
   willingToRelocate: boolean;

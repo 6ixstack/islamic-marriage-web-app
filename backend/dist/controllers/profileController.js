@@ -13,11 +13,13 @@ const profileSchema = zod_1.z.object({
     complexion: zod_1.z.enum(['VERY_FAIR', 'FAIR', 'WHEATISH', 'BROWN', 'DARK']),
     // Education
     educationDegree: zod_1.z.string().min(1, 'Education degree is required'),
+    educationDegreeOther: zod_1.z.string().optional(),
     educationSubject: zod_1.z.string().min(1, 'Education subject is required'),
     educationYear: zod_1.z.number().min(1980).max(new Date().getFullYear()),
     educationInstitute: zod_1.z.string().min(1, 'Education institute is required'),
     // Profession
     profession: zod_1.z.string().min(1, 'Profession is required'),
+    professionOther: zod_1.z.string().optional(),
     company: zod_1.z.string().optional(),
     // Personal
     maritalStatus: zod_1.z.enum(['NEVER_MARRIED', 'DIVORCED', 'WIDOWED']),
@@ -29,6 +31,7 @@ const profileSchema = zod_1.z.object({
     parentsLocation: zod_1.z.string().min(1, 'Parents location is required'),
     // Current Status
     currentResidence: zod_1.z.string().min(1, 'Current residence is required'),
+    citizenship: zod_1.z.string().min(1, 'Citizenship is required'),
     immigrationStatus: zod_1.z.enum(['CITIZEN', 'PERMANENT_RESIDENT', 'TEMPORARY_VISA', 'STUDENT_VISA', 'WORK_VISA', 'OTHER']),
     immigrationDetails: zod_1.z.string().optional(),
     // Preferences
