@@ -25,7 +25,7 @@ export interface ProfileFormData {
   // Basic Info
   name: string;
   gender: Gender;
-  dateOfBirth: Date;
+  dateOfBirth: string;
   countryOfBirth: string;
   height: string;
   complexion: Complexion;
