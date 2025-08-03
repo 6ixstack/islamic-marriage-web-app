@@ -43,7 +43,7 @@ jobs:
         npm run build
       env:
         CI: false
-        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL || 'https://your-backend-url.onrender.com' }}
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL || 'https://muslim-marriage-referral-platform.onrender.com' }}
 
     - name: Setup Pages
       uses: actions/configure-pages@v4
