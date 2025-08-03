@@ -35,21 +35,43 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
+console.log('🌐 Allowed CORS origins:', allowedOrigins);
+
 app.use(cors({
   origin: (origin, callback) => {
+    console.log('🔍 CORS request from origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed for origin:', origin);
       return callback(null, true);
     }
     
+    console.log('❌ CORS blocked for origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`📨 ${req.method} ${req.path} from ${req.get('origin') || 'no-origin'}`);
+  next();
+});
+
+// Explicit OPTIONS handler for all routes
+app.options('*', (req: Request, res: Response) => {
+  console.log('⚙️ Handling OPTIONS request for:', req.path);
+  res.status(204).end();
+});
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
