@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import { z } from 'zod';
 import { supabase } from '../utils/supabase';
 import { ApiResponse } from '../types';
